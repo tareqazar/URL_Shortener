@@ -3,13 +3,13 @@ const express = require("express");
 const app = express();
 const http = require("http").Server(app);
 const env = require("dotenv").config();
-const port = process.env.port;
+const port = process.env.PORT;
 var path = require('path');
 let pg=require('pg');
 
 const {Sequelize} = require('sequelize');
 //const postgres_connect_url = process.env.postgres_connect;
-const sequelize = new Sequelize(process.env.postgres_connect);
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/public/');
 const routes = require('./routes/externalRoutes');
