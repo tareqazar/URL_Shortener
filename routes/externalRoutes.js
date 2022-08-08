@@ -32,19 +32,41 @@ async function isUniqueKey (key) {
     //     return;
     // }
   };
-
+  function returnPromiseValue(result) {
+    return result;
+  }
   async function isUniqueURL (link) {
     //try{
-    url.count({ where: { redirectTo: link } })
+    let uniqueness;
+    await url.count({ where: { redirectTo: link } })
       .then(count => {
         if (count != 0) {
             console.log('not unique URL');
-          return false;
+          uniqueness=false;
         }
+        else{
         console.log('unique URL');
-        return true;
-        
+        uniqueness=true;
+        }
       });
+      return uniqueness;
+  //LATEST BACKUP
+//   async function isUniqueURL (link) {
+//     //try{
+//     url.count({ where: { redirectTo: link } })
+//       .then(count => {
+//         if (count != 0) {
+//             console.log('not unique URL');
+//           return new Promise((res,rej)=>{
+//             if(true){
+//             rej(false);
+//             }
+//           });
+//         }
+//         else {
+//             return new Promise();
+//         }
+//       });
     //}
     // catch(err){
     //     console.error('CAUGHT UNIQUE URL ERROR',err);
@@ -209,15 +231,19 @@ app.post('/shorten', async (req,res)=>{
 app.post('/shortenCustom',  async (req,res)=>{
     let {link}= req.body;
     let {cKey} = req.body;
+    let keyUnique = await (isUniqueKey(cKey));
+    let linkUnique = await (isUniqueURL(link));
+    console.log('keyunique', keyUnique);
+    console.log('linkunique', linkUnique);
     //console.log('link',link,'cKey',cKey)
     
-    if ((!isUniqueKey(cKey))){
+    if (!keyUnique){
         console.log('IF STATEMENT');
         res.send('Key is not unique');
         return;
     }
 
-    else if ( (!isUniqueURL(link)))
+    else if (!linkUnique)
     {
         console.log('SECOND IF STATEMENT')
         url.destroy({where:{redirectTo: link}}).then(()=>{
@@ -230,7 +256,7 @@ app.post('/shortenCustom',  async (req,res)=>{
         return;
     }
     //TROUBLESOME CODE
-    else if (isUniqueKey(cKey)){
+    else if (keyUnique && linkUnique){
         //temp code
         console.log('ELSE STATEMENT')
         const new_entry = url.build({redirectTo: link, code: cKey})

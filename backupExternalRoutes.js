@@ -12,7 +12,7 @@ const {url} = require('../models/db_model');
 async function isUniqueKey (key) {
     console.log('CHECKED IF KEY IS UNIQUE')
     let uniqueness;
-        url.count({ where:{code: key} })
+        await url.count({ where:{code: key} })
         .then(count => {
           if (count != 0) {
               console.log('not unique key');
@@ -165,6 +165,7 @@ app.post('/shorten', async (req,res)=>{
     console.log(link);
     if(link == undefined || link==null || !validURL(link)){
         res.set('Content-Type','text/plain');
+        res.set('Access-Control-Allow-Origin','*')
         res.send(('Invalid URL'));
         return;
     }
@@ -191,12 +192,14 @@ app.post('/shorten', async (req,res)=>{
             newLink.save();
             //console.log('Shorten NULL',uniqueKey);
             res.set('Content-Type','application/x-www-form-urlencoded');
+            res.set('Access-Control-Allow-Origin','*')
             res.send(`code=${uniqueKey}`);
         }
         else {
             let theLink =url.findOne({where:{redirectTo:link}}).then((ob)=>{
                 //console.log('Shorten FOUND', ob.dataValues.code);
-                res.set('Content-Type','application/x-www-form-urlencoded')
+                res.set('Content-Type','application/x-www-form-urlencoded');
+                res.set('Access-Control-Allow-Origin','*');
                 res.send('code='+`${ob.dataValues.code}`);
             });
         }
@@ -208,32 +211,35 @@ app.post('/shortenCustom',  async (req,res)=>{
     let {cKey} = req.body;
     //console.log('link',link,'cKey',cKey)
     
-    if ( await(!isUniqueKey(cKey))){
+    if ((!isUniqueKey(cKey))){
         console.log('IF STATEMENT');
         res.send('Key is not unique');
         return;
     }
 
-    else if ( await (!isUniqueURL(link)))
+    else if ( (!isUniqueURL(link)))
     {
         console.log('SECOND IF STATEMENT')
-        url.destroy({where:{redirectTo: link}});
-        const new_entry = url.build({redirectTo: link, code: cKey});
-        console.log('FIRST SAVE');
-        new_entry.save().then(()=>{
-            res.send(cKey);
-        });   
+        url.destroy({where:{redirectTo: link}}).then(()=>{
+            const new_entry = url.build({redirectTo: link, code: cKey});
+            console.log('FIRST SAVE');
+            new_entry.save().then(()=>{
+                res.send(cKey);
+            });   
+        });
         return;
     }
     //TROUBLESOME CODE
-    else if ( await(isUniqueKey(cKey) && isUniqueURL(link))) {
+    else if (isUniqueKey(cKey)){
         //temp code
         console.log('ELSE STATEMENT')
-        const new_entry = url.build({redirectTo: link, code: cKey});
-        console.log('SECOND SAVE');
-        new_entry.save().then(()=>{
-            res.send(cKey);
+        const new_entry = url.build({redirectTo: link, code: cKey})
+            console.log('SECOND SAVE');
+            new_entry.save().then(()=>{
+                res.send(cKey);
+            
         });
+
         
     }
 
