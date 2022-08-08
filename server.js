@@ -10,7 +10,7 @@ let pg=require('pg');
 const {Sequelize} = require('sequelize');
 //const postgres_connect_url = process.env.postgres_connect;
 const sequelize = new Sequelize(process.env.DATABASE_URL,{
-    ssl : true
+    dialect:'postgres'
 });
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/public/');
