@@ -9,7 +9,9 @@ let pg=require('pg');
 
 const {Sequelize} = require('sequelize');
 //const postgres_connect_url = process.env.postgres_connect;
-const sequelize = new Sequelize(process.env.DATABASE_URL);
+const sequelize = new Sequelize(process.env.DATABASE_URL,{
+    ssl : true
+});
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/public/');
 const routes = require('./routes/externalRoutes');
