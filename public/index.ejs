@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            //alert(window.location.href);
+            let {href} = window.location;
+            function normalizeUrl(link) {
+                // remove "www." if at first part of hostname
+                // remove trailing slash
+                return link.replace(/\/\/www\./i, "//").replace(/\/$/, "");
+            };
+            function validURL(str) {
+                var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+                '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+                return !!pattern.test(str);
+            };
+            //alert(href.substring(href.indexOf('/'),href.length));
+            // function validURL(str) {
+            //     var pattern = new RegExp('/https:\/\//i'+ // protocol
+            //     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+            //     '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+            //     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+            //     '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+            //     '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+            //     return !!pattern.test(str);
+            // }
+             function shortenURL() {
+               let inp = document.getElementById('URL');
+                if(!validURL(inp.value)) {
+                    alert('Invalid URL');
+                    return;
+                };
+                if(inp.value=='') {
+                    alert("URL field is empty");
+                    return;
+                }
+                 let URL = normalizeUrl(inp.value);
+                 xhr = new XMLHttpRequest();
+                 xhr.open('POST','/shorten');
+                //  xhr.onreadystatechange = ()=>{
+                //     console.log(xhr.responseText);
+                //  }
+                 xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+                 xhr.send("link="+URL);
+                 
+                 xhr.onload=() =>{
+                 let keyField= document.getElementById('shortened_url_key');
+                //  xhr.responseText.replace('code=','');
+                //  xhr.responseText.replace('key=','');
+
+                 keyField.value = xhr.responseText.replace('code=','');
+                }
+            }
+
+                 function shortenCustomURL() {
+                    let inp = document.getElementById('cURL');
+                    let cKey = document.getElementById('cKey');
+                    if(!validURL(inp.value)) {
+                    alert('Invalid URL');
+                    return;
+                     };
+                    if(inp.value=='') {
+                    alert("URL field is empty");
+                    return;
+                    }
+                    let URL = normalizeUrl(inp.value);
+                    xhr = new XMLHttpRequest();
+                    xhr.open('POST','/shortenCustom')
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.send('link='+inp.value+'&cKey='+cKey.value);
+                    xhr.onload=()=>{
+                        let keyField= document.getElementById('shortened_url_key');
+                        keyField.value=xhr.responseText;
+                    }
+                }
+                 
+        </script>
+
+        <title>URL Shortener</title>
+    </head>
+
+    <body>
+        <h3>Regular Shortening</h3>
+        <div id = "normal_shorten_div">
+            Enter URL: <input id="URL" placeholder="Enter URL..."/> 
+            <button onclick="shortenURL();">Shorten</button>
+        </div>
+
+        <div id= "custom_shorten_div">
+            <h3>Custom Shortening</h3>
+            Enter URL: <input id="cURL" placeholder="Enter URL..."/> 
+            <input id="cKey" placeholder="Customize to..."/>
+            <button onclick="shortenCustomURL()">Shorten Custom</button>
+        </div>
+        <input id="shortened_url_key" placeholder="Shortened Key..."/>
+    </body>
+
+</html>
